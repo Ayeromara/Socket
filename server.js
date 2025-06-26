@@ -277,3 +277,6 @@ server.listen(PORT, () => {
   console.log(`Socket.IO server running on port ${PORT}`);
 });
 
+apps.get('/', (req, res) => {
+  res.send('Socket.IO server is running');
+});
