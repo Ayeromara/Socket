@@ -43,13 +43,24 @@ exports.getPoll = async (req, res) => {
 
 exports.submitVote = async (req, res) => {
   const { room, option } = req.body;
-  const poll = await Poll.findOne({ room });
 
-  if (poll && poll.options.includes(option)) {
-    poll.votes[option] = (poll.votes[option] || 0) + 1;
-    await poll.save();
-    res.json({ success: true });
-  } else {
-    res.status(400).json({ error: 'Invalid vote' });
+  try {
+    const poll = await Poll.findOne({ room });
+
+    if (poll && poll.options.includes(option)) {
+      const currentVotes = poll.votes.get(option) || 0;
+      poll.votes.set(option, currentVotes + 1);
+
+      // Force Mongoose to detect the change
+      poll.markModified('votes');
+      await poll.save();
+
+      res.json({ success: true });
+    } else {
+      res.status(400).json({ error: 'Invalid vote' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to submit vote' });
   }
 };
