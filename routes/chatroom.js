@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Message = require('../models/message');
-const Poll = require('../models/Poll');
+const Poll = require('../models/polls');
 
 // GET messages for a room
 router.get('/messages/:room', async (req, res) => {
