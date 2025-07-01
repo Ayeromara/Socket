@@ -11,8 +11,7 @@ exports.getRoomsByCategory = (req, res) => {
   const { category } = req.params;
   const rooms = categoryGroups[category];
   if (!rooms) return res.status(404).json({ error: 'Category not found' });
-  const roomsWithGeneral = ['General', ...rooms];
-  res.json(roomsWithGeneral);
+  res.json(rooms);
 };
 
 exports.getMessages = async (req, res) => {
@@ -26,14 +25,21 @@ exports.getPoll = async (req, res) => {
   let poll = await Poll.findOne({ room });
 
   if (!poll) {
-    // Create poll automatically based on subcategories
-    const options = categoryGroups[room] || ['Option 1', 'Option 2'];
-    poll = new Poll({ room, question: `Vote in ${room}`, options, votes: Object.fromEntries(options.map(o => [o, 0])) });
+    // You can dynamically generate options if you have a data source for nominees.
+    // For now, we'll use static options.
+    const options = ['Nominee A', 'Nominee B', 'Nominee C'];
+    poll = new Poll({
+      room,
+      question: `Vote for the best in ${room}`,
+      options,             
+      votes: Object.fromEntries(options.map(o => [o, 0]))
+    });
     await poll.save();
   }
 
   res.json(poll);
 };
+
 
 exports.submitVote = async (req, res) => {
   const { room, option } = req.body;
