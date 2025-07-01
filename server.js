@@ -22,7 +22,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/chatroom', chatroomRoutes);
+app.use('/', chatroomRoutes);
 
 // Database connection
 mongoose
