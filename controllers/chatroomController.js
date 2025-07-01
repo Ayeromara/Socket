@@ -1,6 +1,6 @@
 // controllers/chatroomController.js
 const Message = require('../models/message');
-const Poll = require('../models/poll');
+const Poll = require('../models/polls');
 const categoryGroups = require('../data/category');
 
 exports.getCategories = (req, res) => {
