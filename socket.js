@@ -1,32 +1,36 @@
-const Message = require('./models/message');
+// socket.js
+const messages = {}; // { roomName: [{ username, text, timestamp }] }
 
-module.exports = function (io) {
-  const rooms = new Set();
-
+module.exports = (io) => {
   io.on('connection', (socket) => {
-    console.log('New user connected');
+    console.log('New client connected');
 
-    socket.on('join', ({ username, category }) => {
-      if (!rooms.has(category)) {
-        rooms.add(category);
+    socket.on('join', ({ username, room }) => {
+      socket.join(room);
+      console.log(`${username} joined room: ${room}`);
+
+      // Send existing messages to the user
+      if (!messages[room]) {
+        messages[room] = [];
       }
-      socket.join(category);
-      io.emit('availableRooms', Array.from(rooms));
 
-      // Send messages for this room
-      Message.find({ room: category }).then((messages) => {
-        socket.emit('roomMessages', { room: category, messages });
-      });
+      io.to(socket.id).emit('roomMessages', { room, messages: messages[room] });
+      io.to(room).emit('message', { room, message: { username: 'System', text: `${username} has joined the chat`, timestamp: new Date() } });
     });
 
-    socket.on('sendMessage', async ({ room, message }) => {
-      const newMessage = new Message({ room, username: socket.id, text: message });
-      await newMessage.save();
+    socket.on('sendMessage', ({ room, message, username }) => {
+      if (!messages[room]) {
+        messages[room] = [];
+      }
+
+      const newMessage = { username, text: message, timestamp: new Date() };
+      messages[room].push(newMessage);
+
       io.to(room).emit('message', { room, message: newMessage });
     });
 
     socket.on('disconnect', () => {
-      console.log('User disconnected');
+      console.log('Client disconnected');
     });
   });
 };

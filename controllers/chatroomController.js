@@ -7,6 +7,14 @@ exports.getCategories = (req, res) => {
   res.json(Object.keys(categoryGroups));
 };
 
+exports.getRoomsByCategory = (req, res) => {
+  const { category } = req.params;
+  const rooms = categoryGroups[category];
+  if (!rooms) return res.status(404).json({ error: 'Category not found' });
+  const roomsWithGeneral = ['General', ...rooms];
+  res.json(roomsWithGeneral);
+};
+
 exports.getMessages = async (req, res) => {
   const { room } = req.params;
   const messages = await Message.find({ room });
